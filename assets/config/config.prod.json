@@ -1,0 +1,17 @@
+{
+  "env": {
+    "name": "#{envName}"
+  },
+  "portal": {
+    "url": "https://ourcommunity.maps.arcgis.com/"
+  },
+  "services": {
+    "survey": "https://services9.arcgis.com/q5uyFfTZo3LFL04P/arcgis/rest/services/survey123_13f819f85b6540b3bfefd9a1e9ed6b94/FeatureServer"
+  },
+  "items": {
+    "webMap": "592914ba81a74584b063c0dca362e33d"
+  },
+  "text": {
+    "question": "In one word, how does the recent handling of race relations in the U.S. make you feel?"
+  }
+}
