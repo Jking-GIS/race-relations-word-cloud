@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Load d3-cloud -->
+<script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3.layout.cloud.js"></script>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+<!-- Load arcgis js api -->
+<link
+  rel="stylesheet"
+  href="https://js.arcgis.com/4.16/esri/themes/light/main.css"
+/>
+<script src="https://js.arcgis.com/4.16/"></script>
+
+<style>
+  html,
+  body,
+  #wordCloudContainer {
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+    background-color: rgb(34, 34, 34);
+    overflow: hidden;
+  }
+
+  #wordCloudDiv {
+    height: 100%;
+    width: 30%;
+    float: left;
+  }
+
+  #wordCloudItem {
+    width: 100%;
+    height: calc(100% - 50px);
+  }
+  
+  #wordCloudMapDiv {
+    height: 100%;
+    width: 70%;
+    float: right;
+  }
+
+  @media only screen and (max-width: 1000px) {
+    #wordCloudContainer {
+      display: block;
+    }
+
+    #wordCloudDiv {
+      width: 100%;
+      float: none;
+      height: 250px;
+    }
+
+    #wordCloudItem {
+      width: 100%;
+      height: 200px;
+    }
+
+    #wordCloudMapDiv {
+      width: 100%;
+      height: calc(100% - 260px);
+      float: none;
+    }
+  }
+
+  @media only screen and (max-height: 750px) and (max-width: 1000px) {
+    #wordCloudDiv {
+      height: 150px;
+    }
+
+    #wordCloudItem {
+      height: 100px;
+    }
+
+    #wordCloudMapDiv {
+      height: calc(100% - 160px);
+    }
+  }
+
+  #wordCloudLabel {
+    width: calc(100% - 20px);
+    height: 40px;
+    margin: 10px;
+    font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+    font-weight: bolder;
+    font-style: unset;
+    font-size: 20px;
+    color: white;
+    text-align: center;
+  }
+
+  .esri-editor .esri-item-list__scroller {
+    max-height: 350px;
+  }
+</style>
+
+<!-- Create a div where the graph will take place -->
+<div id="wordCloudContainer">
+  <div id="wordCloudDiv">
+    <div id="wordCloudLabel">Click a word to filter the map and see more info!</div>
+    <div id="wordCloudItem"></div>
+  </div>
+  <div id="wordCloudMapDiv"></div>
+</div>
+
+<script>
+  require([
+    "esri/WebMap",
+    "esri/views/MapView",
+    "esri/geometry/Multipoint",
+    "esri/core/watchUtils",
+    "esri/widgets/Home"
+  ], function (WebMap, MapView, Multipoint, EsriWatchUtils, Home) {
+    // TO BE REPLACED FOR CONFIGURATION
+    // -----------------------------------------------------------------
+    var surveyLayerUrl = "https://services9.arcgis.com/q5uyFfTZo3LFL04P/arcgis/rest/services/survey123_13f819f85b6540b3bfefd9a1e9ed6b94/FeatureServer"
+    var statesLayerUrl = "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_States_Generalized/FeatureServer"
+    var webMapId = "820b892cf2b54283bcef1c1c9c635524"
+
+    var surveyQuestionField = "Question"
+    var surveyDescriptionField = "describe_why_you_chose_this_wor"
+
+    var stateNameField = "STATE_NAME"
+
+    var extraStatePopupContent = [{
+      type: "media",
+      mediaInfos: [
+        {
+          title: "Race Distribution",
+          type: "pie-chart",
+          caption: "",
+          value: {
+            fields: ["WHITE", "BLACK", "AMERI_ES", "ASIAN", "HAWN_PI", "HISPANIC", "OTHER", "MULT_RACE"],
+            normalizeField: null,
+            tooltipField: null
+          }
+        }
+      ]
+    }]
+
+    var wordCloudColor = "#ebb134"
+    var wordCloudSelectedColor = "#eb5634"
+    // -----------------------------------------------------------------
+    // TO BE REPLACED FOR CONFIGURATION
+
+    var maxHeight = 750;
+    var maxWidth = 1000;
+
+    var popupHasOpenedOnce = false;
+
+    var debouncing = false;
+    var lastQuestionAnswers = [];
+    var layout = null;
+    var surveyLayer = null;
+    var statesLayer = null;
+    var defaultPopupTemplate = null;
+
+    var currentAnswer = null;
+    var currentStates = [];
+
+    var wordLocations = {};
+
+    var closingPopup = false;
+    
+    // Create a map from the referenced webmap item id
+    let webmap = new WebMap({
+      portalItem: {
+        id: webMapId
+      }
+    });
+
+    let view = new MapView({
+      container: "wordCloudMapDiv",
+      map: webmap
+    });
+
+    view.when(() => {
+      let home = new Home({
+        view: view
+      })
+
+      view.ui.add(home, {
+        position: "top-left"
+      })
+
+      // reduceFeatures()
+      EsriWatchUtils.whenTrue(view, 'stationary', () => {
+        if (view.extent) {
+          extentChanged()
+        }
+      });
+
+      EsriWatchUtils.watch(view.popup, 'visible', popupVisibleChanged)
+      EsriWatchUtils.watch(view.popup, 'selectedFeature', popupFeatureChanged)
+      $(window).on('resize', windowResized)
+
+      defaultPopupTemplate = getStatesLayer().popupTemplate
+    })
+
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 10, bottom: 10, left: 10}
+    width = ($(window).width()*(0.3)) - margin.left - margin.right,
+    height = ($(window).height()-50) - margin.top - margin.bottom;
+
+    if ($(window).width() <= maxWidth) {
+      width = $(window).width() - margin.left - margin.right
+
+      if ($(window).height() <= maxHeight) {
+        height = 100 - margin.top - margin.bottom
+      } else {
+        height = 200 - margin.top - margin.bottom
+      }
+    }
+
+// append the svg object to the body of the page
+var svg = d3.select("#wordCloudItem").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+// Constructs a new cloud layout instance. It run an algorithm to find the position of words that suits your requirements
+// Wordcloud features that are different from one word to the other must be here
+
+function reduceFeatures() {
+  const surveyLayer = getSurveyLayer()
+  surveyLayer.featureReduction = {
+    type: "cluster",
+    clusterRadius: "100px",
+    popupTemplate: {
+      content: "This cluster represents {cluster_count} answers."
+    },
+    clusterMinSize: "24px",
+    clusterMaxSize: "60px",
+    labelingInfo: [{
+      // turn off deconfliction to ensure all clusters are labeled
+      deconflictionStrategy: "none",
+      labelExpressionInfo: {
+        expression: "Text($feature.cluster_count, '#,###')"
+      },
+      symbol: {
+        type: "text",
+        color: "#004a5d",
+        font: {
+          weight: "bold",
+          family: "Noto Sans",
+          size: "12px"
+        }
+      },
+      labelPlacement: "center-center",
+    }]
+  }
+}
+
+function windowResized() {
+  svg = d3.select("#wordCloudItem").select('svg').remove()
+
+  if ($(window).width() > maxWidth) {
+    width = ($(window).width()*(0.3)) - margin.left - margin.right
+    height = ($(window).height()-50) - margin.top - margin.bottom
+  } else {
+    width = $(window).width() - margin.left - margin.right
+
+    if ($(window).height() <= maxHeight) {
+      height = 100 - margin.top - margin.bottom
+    } else {
+      height = 200 - margin.top - margin.bottom
+    }
+  }
+
+  svg = d3.select("#wordCloudItem").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+  refreshWordCloud(lastQuestionAnswers)
+}
+
+function getSurveyLayer() {
+  if (!surveyLayer) {
+    view.map.layers.forEach(layer => {
+      if (layer.url === surveyLayerUrl) {
+        surveyLayer = layer;
+      }
+    });
+  }
+
+  return surveyLayer
+}
+
+function getStatesLayer() {
+  if (!statesLayer) {
+    view.map.layers.forEach(layer => {
+      if (layer.url === statesLayerUrl) {
+        statesLayer = layer;
+      }
+    });
+  }
+
+  return statesLayer
+}
+    
+function extentChanged(evt) {
+  if (!debouncing) {
+    debouncing = true;
+    setTimeout(() => {
+      debouncing = false;
+    }, 100);
+
+    const surveyLayer = getSurveyLayer()
+    const surveyQuery = surveyLayer.createQuery();
+    surveyQuery.geometry = view.extent;
+
+    surveyLayer.queryFeatures(surveyQuery).then((results) => {
+      const questionAnswers = results.features.map((feature) => {
+        return feature.attributes[surveyQuestionField];
+      });
+
+      const uniqueQuestionAnswers = [...new Set(questionAnswers)]
+
+      if (!arraysEqual(uniqueQuestionAnswers, lastQuestionAnswers)) {
+        refreshWordCloud(uniqueQuestionAnswers);
+      }
+    });
+  }
+}
+    
+function refreshWordCloud(questionAnswers) {
+  const fontSize = ($(window).height() <= maxHeight && $(window).width() <= maxWidth) ? 20 : 30
+  layout = d3.layout.cloud()
+    .size([width, height])
+    .words(questionAnswers.map(function(d) { return {text: d}; }))
+    .padding(5)    
+    .rotate(0)    //space between words
+    .fontSize(fontSize)      // font size of words
+    .on("end", draw);
+  layout.start(); 
+  
+  lastQuestionAnswers = questionAnswers;
+}
+    
+function clickedWord(evt) {
+  currentStates = [];
+
+  closePopup()
+
+  if (currentAnswer && currentAnswer === evt.text) {
+    currentAnswer = null
+  } else {
+    currentAnswer = evt.text
+  }
+
+  refreshWordCloud(lastQuestionAnswers)
+  
+  const surveyLayer = getSurveyLayer()
+  const statesLayer = getStatesLayer()
+  statesLayer.definitionExpression = '1=1'
+
+  if (currentAnswer) {
+    const surveyQuery = surveyLayer.createQuery();
+    const statesQuery = statesLayer.createQuery();
+    surveyQuery.where = surveyQuestionField + ' = \'' + evt.text + '\'';
+
+    const multiPointResults = new Multipoint()
+    surveyLayer.queryFeatures(surveyQuery).then((results) => {
+      results.features.forEach((feature) => {
+        multiPointResults.addPoint(feature.geometry)
+      });
+
+      statesQuery.geometry = multiPointResults
+      statesLayer.queryFeatures(statesQuery).then((statesResults) => {
+        currentStates = statesResults.features
+        filterStates()
+        openCurrentStatesPopup()
+      });
+    });
+  }
+}
+
+function filterStates() {
+  const statesLayer = getStatesLayer()
+  let defExpr = null
+  currentStates.forEach((feature) => {
+    if (!defExpr) defExpr = ''
+    else defExpr += ' OR '
+    defExpr += (stateNameField + ' = \'' + feature.attributes[stateNameField] + '\'')
+  })
+  statesLayer.definitionExpression = defExpr
+}
+
+function closePopup() {
+  if (view.popup.visible) {
+    closingPopup = true;
+    view.popup.close()
+  }
+}
+
+function openCurrentStatesPopup() {
+  view.popup.open({
+    features: currentStates,
+    updateLocationEnabled: true
+  })
+}
+
+function popupVisibleChanged(visible) {
+  if (!closingPopup && popupHasOpenedOnce && !visible) {
+    clickedWord({text: currentAnswer})
+  } else {
+    closingPopup = false
+    popupHasOpenedOnce = true
+  }
+}
+
+function popupFeatureChanged(feature) {
+  const statesLayer = getStatesLayer()
+  if (feature && feature.layer && feature.layer === statesLayer) {
+    const surveyLayer = getSurveyLayer()
+    const surveyQuery = surveyLayer.createQuery();
+    surveyQuery.where = surveyQuestionField + ' = \'' + currentAnswer + '\'';
+    surveyQuery.geometry = feature.geometry
+
+    surveyLayer.queryFeatures(surveyQuery).then((results) => {
+      const questionDescriptions = results.features.map((feature) => {
+        return feature.attributes[surveyDescriptionField]
+      });
+
+      setStatesPopup(questionDescriptions, feature)
+    });
+  }
+}
+
+function setStatesPopup(questionDescriptions, state) {
+  const statesLayer = getStatesLayer()
+  if (currentAnswer) {
+    let htmlContent = '<ul class="list-group" id="wordCloudModalBodyList">'
+    questionDescriptions.forEach((questionDescription) => {
+      htmlContent += '<li class ="list-group-item">' + questionDescription + '</li>'
+    });
+    htmlContent += '</ul>'
+    const titleModifier = questionDescriptions.length > 0 ? 'feels' : 'does not feel'
+    statesLayer.popupTemplate = {
+      title: '{' + stateNameField + '} ' + titleModifier + ' ' + currentAnswer,
+      content: [
+        {
+          type: "text",
+          text: htmlContent
+        },
+        ...extraStatePopupContent
+      ]
+    }
+  } else {
+    statesLayer.popupTemplate = defaultPopupTemplate
+  }
+}
+
+// This function takes the output of 'layout' above and draw the words
+// Wordcloud features that are THE SAME from one word to the other can be here
+function draw(words) {
+  const fontSize = ($(window).height() <= maxHeight && $(window).width() <= maxWidth) ? 20 : 30
+  svg
+    .select("g")
+    .remove()
+  
+  svg
+    .append("g")
+      .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
+      .selectAll("text")
+        .data(words)
+      .enter().append("text")
+        .style("font-size", fontSize)
+        .style("fill", function (d) { if (d.text === currentAnswer) { return wordCloudSelectedColor } else { return wordCloudColor }})
+        .style("cursor", "pointer")
+        .attr("text-anchor", "middle")
+        .style("font-family", "Impact")
+        .attr("transform", function(d) {
+          if (!wordLocations.hasOwnProperty(d.text)) {
+            wordLocations[d.text] = [d.x, d.y]
+          }
+
+          return "translate(" + wordLocations[d.text] + ")rotate(" + d.rotate + ")";
+        })
+        .text(function(d) { return d.text; }).on("click", clickedWord);
+}
+    
+function arraysEqual(arr1, arr2) {
+    if (!Array.isArray(arr1) || ! Array.isArray(arr2) || arr1.length !== arr2.length) {
+      return false;
+    }
+
+    const sortedArr1 = arr1.concat().sort();
+    const sortedArr2 = arr2.concat().sort();
+
+    for (let i = 0; i < sortedArr1.length; i++) {
+      if (sortedArr1[i] !== sortedArr2[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+    
+  });
+  
+</script>
