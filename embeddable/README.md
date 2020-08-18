@@ -2,7 +2,7 @@
 
 #### Configuration Steps
 1. Open the `all.html` file
-2. You will find a section near the top that has `// TO BE REPLACED FOR CONFIGURATION` before and after a chunk of variables
+2. There is a configurable section at https://github.com/Jking-GIS/race-relations-word-cloud/blob/master/embeddable/all.html#L120-L150
 3. For each variable that you want to configure, you can modify it in this section
 4. Some of the things that are configurable include:
     - surveyLayerUrl - the url to the survey service
