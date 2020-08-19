@@ -146,6 +146,8 @@
 
     var wordCloudColor = "#ebb134"
     var wordCloudSelectedColor = "#eb5634"
+
+    var fontFamily = "Futura"
     // -----------------------------------------------------------------
     // TO BE REPLACED FOR CONFIGURATION
 
@@ -487,7 +489,7 @@ function draw(words) {
         .style("fill", function (d) { if (d.text === currentAnswer) { return wordCloudSelectedColor } else { return wordCloudColor }})
         .style("cursor", "pointer")
         .attr("text-anchor", "middle")
-        .style("font-family", "Impact")
+        .style("font-family", fontFamily)
         .attr("transform", function(d) {
           if (!wordLocations.hasOwnProperty(d.text)) {
             wordLocations[d.text] = [d.x, d.y]
