@@ -119,8 +119,8 @@
   ], function (WebMap, MapView, Multipoint, EsriWatchUtils, Home) {
     // TO BE REPLACED FOR CONFIGURATION
     // -----------------------------------------------------------------
-    var surveyLayerUrl = "https://services9.arcgis.com/q5uyFfTZo3LFL04P/arcgis/rest/services/survey123_13f819f85b6540b3bfefd9a1e9ed6b94/FeatureServer"
-    var statesLayerUrl = "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_States_Generalized/FeatureServer"
+    var surveyLayerName = "Race Relations Word Cloud Survey - 2"
+    var statesLayerName = "USA States (Generalized)"
     var webMapId = "820b892cf2b54283bcef1c1c9c635524"
 
     var surveyQuestionField = "Question"
@@ -288,7 +288,7 @@ function windowResized() {
 function getSurveyLayer() {
   if (!surveyLayer) {
     view.map.layers.forEach(layer => {
-      if (layer.url === surveyLayerUrl) {
+      if (layer.title === surveyLayerName) {
         surveyLayer = layer;
       }
     });
@@ -300,7 +300,7 @@ function getSurveyLayer() {
 function getStatesLayer() {
   if (!statesLayer) {
     view.map.layers.forEach(layer => {
-      if (layer.url === statesLayerUrl) {
+      if (layer.tile === statesLayerName) {
         statesLayer = layer;
       }
     });
