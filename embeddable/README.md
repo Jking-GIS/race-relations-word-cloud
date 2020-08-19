@@ -5,8 +5,8 @@
 2. There is a configurable section at https://github.com/Jking-GIS/race-relations-word-cloud/blob/master/embeddable/all.html#L120-L150
 3. For each variable that you want to configure, you can modify it in this section
 4. Some of the things that are configurable include:
-    - surveyLayerUrl - the url to the survey service
-    - statesLayerUrl - the url to the states service
+    - surveyLayerName - the name of the survey layer in the web map
+    - statesLayerName - the name of the states layer in the web map
     - webMapId - the id to the web map
     - surveyQuestionField - the question/answer field from the survey service
     - surveyDescriptionField - the descriptive text field from the survey service
