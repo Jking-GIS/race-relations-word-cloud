@@ -268,7 +268,7 @@ function filterBadWords() {
     let badQuestions = []
     surveyResults.features.forEach(feature => {
       const question = feature.attributes[surveyQuestionField]
-      if (fetchBadWords().includes(question) || fetchDummyWords().includes(question)) {
+      if (fetchBadWords().includes(question.toLowerCase()) || fetchDummyWords().includes(question.toLowerCase())) {
         badQuestions.push('\'' + question + '\'')
       } else {
         const description = feature.attributes[surveyDescriptionField]
@@ -276,7 +276,7 @@ function filterBadWords() {
           const descriptionWords = description.split(/[\s,]+/)
           for (i = 0; i < descriptionWords.length; i++) {
             const word = descriptionWords[i]
-            if (fetchBadWords().includes(word)) {
+            if (fetchBadWords().includes(word.toLowerCase())) {
               badQuestions.push('\'' + question + '\'')
               break
             }
