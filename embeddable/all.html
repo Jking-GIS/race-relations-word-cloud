@@ -157,6 +157,7 @@
     var popupHasOpenedOnce = false;
 
     var debouncing = false;
+    var allQuestionAnswers = [];
     var lastQuestionAnswers = [];
     var layout = null;
     var surveyLayer = null;
@@ -214,7 +215,7 @@
 
       EsriWatchUtils.watch(view.popup, 'visible', popupVisibleChanged)
       EsriWatchUtils.watch(view.popup, 'selectedFeature', popupFeatureChanged)
-      $(window).on('resize', windowResized)
+      $(window).on('resize', resetWordCloud)
 
       defaultPopupTemplate = getStatesLayer().popupTemplate
       
@@ -223,51 +224,59 @@
     })
 
 function setupWordCloud() {
-  if (waitingOnRefresh) {
-    if (!svg) {
-      if ($(window).width() <= maxWidth) {
-        width = $(window).width() - margin.left - margin.right
+  if (!svg) {
+    if ($(window).width() <= maxWidth) {
+      width = $(window).width() - margin.left - margin.right
 
-        if ($(window).height() <= maxHeight) {
-          height = 100 - margin.top - margin.bottom
-        } else {
-          height = 200 - margin.top - margin.bottom
-        }
+      if ($(window).height() <= maxHeight) {
+        height = 100 - margin.top - margin.bottom
+      } else {
+        height = 200 - margin.top - margin.bottom
       }
-
-      // append the svg object to the body of the page
-      svg = d3.select("#wordCloudItem").append("svg")
-        .attr("width", width)
-        .attr("height", height)
-      .append("g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
-
-      extentChanged()
-    } else {
-      refreshWordCloud(lastQuestionAnswers)
     }
 
-    waitingOnRefresh = false;
+    // append the svg object to the body of the page
+    svg = d3.select("#wordCloudItem").append("svg")
+      .attr("width", width)
+      .attr("height", height)
+    .append("g")
+      .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    extentChanged()
+  } else {
+    resetWordCloud()
   }
+
+  waitingOnRefresh = false;
 }
 
 function setupSurveyLayerViewEvent() {
   view.whenLayerView(getSurveyLayer()).then(function(layerView){
     layerView.watch("updating", function(value){
-      if (!value) setupWordCloud()
+      if (!value) {
+        console.log('am i waiting on refresh? ' + waitingOnRefresh)
+        if (waitingOnRefresh) setupWordCloud()
+        else filterBadWords()
+      }
     });
   });
 }
 
 function filterBadWords() {
   surveyLayer = getSurveyLayer()
+  let newQuestionAnswers = false;
 
   const surveyQuery = surveyLayer.createQuery();
   surveyLayer.queryFeatures(surveyQuery).then((surveyResults) => {
     let badQuestions = []
     surveyResults.features.forEach(feature => {
       const question = feature.attributes[surveyQuestionField]
+      if (!allQuestionAnswers.includes(question)) {
+        allQuestionAnswers.push(question)
+        newQuestionAnswers = true;
+      }
+      
       if (fetchBadWords().includes(question.toLowerCase()) || fetchDummyWords().includes(question.toLowerCase())) {
         badQuestions.push('\'' + question + '\'')
       } else {
@@ -285,11 +294,13 @@ function filterBadWords() {
       }
     })
 
-    waitingOnRefresh = true
-    if (badQuestions.length > 0) {
-      surveyLayer.definitionExpression = surveyQuestionField + ' NOT IN (' + badQuestions.join(',') + ')'
-    } else {
-      setupWordCloud()
+    if (newQuestionAnswers) {
+      if (badQuestions.length > 0) {
+        waitingOnRefresh = true
+        surveyLayer.definitionExpression = surveyQuestionField + ' NOT IN (' + badQuestions.join(',') + ')'
+      } else {
+        setupWordCloud()
+      }
     }
   });
 }
@@ -324,8 +335,11 @@ function reduceFeatures() {
   }
 }
 
-function windowResized() {
-  if (svg) {
+function resetWordCloud(evt) {
+  if (evt) {
+    allQuestionAnswers = []
+    filterBadWords()
+  } else if (svg) {
     svg = d3.select("#wordCloudItem").select('svg').remove()
 
     if ($(window).width() > maxWidth) {
@@ -534,6 +548,14 @@ function setStatesPopup(questionDescriptions, state) {
 // This function takes the output of 'layout' above and draw the words
 // Wordcloud features that are THE SAME from one word to the other can be here
 function draw(words) {
+  resetPositions = false
+  for(i = 0; i < words.length; i++) {
+    if (!wordLocations.hasOwnProperty(words[i].text)) {
+      wordLocations = {}
+      break
+    }
+  }
+
   const fontSize = ($(window).height() <= maxHeight && $(window).width() <= maxWidth) ? 20 : 30
   svg
     .select("g")
