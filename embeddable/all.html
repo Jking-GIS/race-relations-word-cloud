@@ -177,7 +177,14 @@
 
     let view = new MapView({
       container: "wordCloudMapDiv",
-      map: webmap
+      map: webmap,
+      popup: {
+        dockEnabled: true,
+        dockOptions: {
+          buttonEnabled: true,
+          breakpoint: false
+        }
+      }
     });
 
     view.when(() => {
@@ -300,7 +307,7 @@ function getSurveyLayer() {
 function getStatesLayer() {
   if (!statesLayer) {
     view.map.layers.forEach(layer => {
-      if (layer.tile === statesLayerName) {
+      if (layer.title === statesLayerName) {
         statesLayer = layer;
       }
     });
