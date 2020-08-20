@@ -172,6 +172,7 @@
     var currentStates = [];
 
     var wordLocations = {};
+    var wordDupes = {};
 
     var closingPopup = false;
 
@@ -407,7 +408,16 @@ function extentChanged(evt) {
 
     surveyLayer.queryFeatures(surveyQuery).then((results) => {
       const questionAnswers = results.features.map((feature) => {
-        return feature.attributes[surveyQuestionField];
+        const questionAnswer = feature.attributes[surveyQuestionField]
+        const lowerCaseQuestionAnswer = questionAnswer.toLowerCase()
+        if (wordDupes.hasOwnProperty(lowerCaseQuestionAnswer) && 
+            !wordDupes[lowerCaseQuestionAnswer].includes(questionAnswer)) {
+          wordDupes[lowerCaseQuestionAnswer].push('\'' + questionAnswer + '\'')
+        } else {
+          wordDupes[lowerCaseQuestionAnswer] = ['\'' + questionAnswer + '\'']
+        }
+        
+        return lowerCaseQuestionAnswer;
       });
 
       const uniqueQuestionAnswers = [...new Set(questionAnswers)]
@@ -455,7 +465,7 @@ function clickedWord(evt) {
   if (currentAnswer) {
     const surveyQuery = surveyLayer.createQuery();
     const statesQuery = statesLayer.createQuery();
-    surveyQuery.where = surveyQuestionField + ' = \'' + evt.text + '\'';
+    surveyQuery.where = surveyQuestionField + ' IN (' + wordDupes[currentAnswer].join(',') + ')';
 
     const multiPointResults = new Multipoint()
     surveyLayer.queryFeatures(surveyQuery).then((results) => {
@@ -512,7 +522,7 @@ function popupFeatureChanged(feature) {
   if (feature && feature.layer && feature.layer === statesLayer) {
     const surveyLayer = getSurveyLayer()
     const surveyQuery = surveyLayer.createQuery();
-    surveyQuery.where = surveyQuestionField + ' = \'' + currentAnswer + '\'';
+    surveyQuery.where = surveyQuestionField + ' IN (' + wordDupes[currentAnswer].join(',') + ')';
     surveyQuery.geometry = feature.geometry
 
     surveyLayer.queryFeatures(surveyQuery).then((results) => {
