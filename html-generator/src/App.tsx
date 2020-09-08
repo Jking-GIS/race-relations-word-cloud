@@ -132,7 +132,7 @@ function App() {
                 <Col sm="8">
                   <SketchPicker
                     color={ '#ebb134' }
-                    onChangeComplete={ configChanged }
+                    onChangeComplete={ colorChanged }
                   />
                 </Col>
               </Form.Group>
@@ -142,7 +142,7 @@ function App() {
                 <Col sm="8">
                   <SketchPicker
                     color={ '#eb5634' }
-                    onChangeComplete={ configChanged }
+                    onChangeComplete={ selectedColorChanged }
                   />
                 </Col>
               </Form.Group>
@@ -179,14 +179,33 @@ function App() {
   );
 }
 
+function colorChanged(evt: any) {
+  configChanged({
+    'target': {
+      'id': 'wordCloudColor',
+      'value': `"${evt.hex}"`
+    }
+  })
+}
+
+function selectedColorChanged(evt: any) {
+  configChanged({
+    'target': {
+      'id': 'wordCloudSelectedColor',
+      'value': `"${evt.hex}"`
+    }
+  })
+}
+
 function configChanged(evt: any) {
+  console.log(evt)
   if (!evt) {
     setTimeout(() => {
       copyableHtmlText.current!.value = template.replace()
     }, 500)
   } else {
     if (evt.target.id === 'extraBoundaryPopupContent') {
-      copyableHtmlText.current!.value = template.replace(evt.target.id, JSON.stringify(evt.target.value))
+      copyableHtmlText.current!.value = template.replace(evt.target.id, evt.target.value)
     } else {
       copyableHtmlText.current!.value = template.replace(evt.target.id, `"${evt.target.value}"`)
     }

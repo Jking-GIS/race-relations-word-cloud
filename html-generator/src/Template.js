@@ -632,12 +632,18 @@ var idMapping = {
   'wordCloudSelectedColor': '"#eb5634"',
   'wordCloudFontFamily': '"Futura"'
 }
+var originalIdMapping = JSON.parse(JSON.stringify(idMapping))
 
 export function replace(varToReplace, valueToReplace) {
   var replacedHtml = ''
 
-  if (varToReplace && valueToReplace) {
-    idMapping[varToReplace] = valueToReplace
+  if (varToReplace) {
+    if (valueToReplace && valueToReplace !== '""' && valueToReplace !== '') {
+      console.log(valueToReplace)
+      idMapping[varToReplace] = valueToReplace
+    } else {
+      idMapping[varToReplace] = originalIdMapping[varToReplace]
+    }
   }
   
   Object.keys(idMapping).forEach(vtr => {
