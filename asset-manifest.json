@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "/race-relations-word-cloud/static/css/main.90be11e0.chunk.css",
+    "main.css": "/race-relations-word-cloud/static/css/main.29ff37be.chunk.css",
     "main.js": "/race-relations-word-cloud/static/js/main.537898f3.chunk.js",
     "main.js.map": "/race-relations-word-cloud/static/js/main.537898f3.chunk.js.map",
     "runtime-main.js": "/race-relations-word-cloud/static/js/runtime-main.fe37264b.js",
@@ -9,17 +9,17 @@
     "static/js/2.7a8e6ad1.chunk.js": "/race-relations-word-cloud/static/js/2.7a8e6ad1.chunk.js",
     "static/js/2.7a8e6ad1.chunk.js.map": "/race-relations-word-cloud/static/js/2.7a8e6ad1.chunk.js.map",
     "index.html": "/race-relations-word-cloud/index.html",
-    "precache-manifest.594966f6e058856d7b2e10e0f39fc4f5.js": "/race-relations-word-cloud/precache-manifest.594966f6e058856d7b2e10e0f39fc4f5.js",
+    "precache-manifest.cc2ed93412e626869828fe051a222ca8.js": "/race-relations-word-cloud/precache-manifest.cc2ed93412e626869828fe051a222ca8.js",
     "service-worker.js": "/race-relations-word-cloud/service-worker.js",
     "static/css/2.d9ad5f5c.chunk.css.map": "/race-relations-word-cloud/static/css/2.d9ad5f5c.chunk.css.map",
-    "static/css/main.90be11e0.chunk.css.map": "/race-relations-word-cloud/static/css/main.90be11e0.chunk.css.map",
+    "static/css/main.29ff37be.chunk.css.map": "/race-relations-word-cloud/static/css/main.29ff37be.chunk.css.map",
     "static/js/2.7a8e6ad1.chunk.js.LICENSE.txt": "/race-relations-word-cloud/static/js/2.7a8e6ad1.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.fe37264b.js",
     "static/css/2.d9ad5f5c.chunk.css",
     "static/js/2.7a8e6ad1.chunk.js",
-    "static/css/main.90be11e0.chunk.css",
+    "static/css/main.29ff37be.chunk.css",
     "static/js/main.537898f3.chunk.js"
   ]
 }
