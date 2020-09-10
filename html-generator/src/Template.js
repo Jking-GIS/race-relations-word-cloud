@@ -263,15 +263,15 @@ function filterBadWords() {
       }
       
       if (fetchBadWords().includes(question.toLowerCase()) || fetchDummyWords().includes(question.toLowerCase())) {
-        badQuestions.push('\'' + question + '\'')
+        badQuestions.push('\\'' + question + '\\'')
       } else {
         const description = feature.attributes[surveyDescriptionField]
         if (description) {
-          const descriptionWords = description.split(/[\s,]+/)
+          const descriptionWords = description.split(/[\\s,]+/)
           for (i = 0; i < descriptionWords.length; i++) {
             const word = descriptionWords[i]
             if (fetchBadWords().includes(word.toLowerCase())) {
-              badQuestions.push('\'' + question + '\'')
+              badQuestions.push('\\'' + question + '\\'')
               break
             }
           }
@@ -392,9 +392,9 @@ function extentChanged(evt) {
         const lowerCaseQuestionAnswer = questionAnswer.toLowerCase()
         if (wordDupes.hasOwnProperty(lowerCaseQuestionAnswer) && 
             !wordDupes[lowerCaseQuestionAnswer].includes(questionAnswer)) {
-          wordDupes[lowerCaseQuestionAnswer].push('\'' + questionAnswer + '\'')
+          wordDupes[lowerCaseQuestionAnswer].push('\\'' + questionAnswer + '\\'')
         } else {
-          wordDupes[lowerCaseQuestionAnswer] = ['\'' + questionAnswer + '\'']
+          wordDupes[lowerCaseQuestionAnswer] = ['\\'' + questionAnswer + '\\'']
         }
         
         return lowerCaseQuestionAnswer;
@@ -470,7 +470,7 @@ function filterStates() {
   currentStates.forEach((feature) => {
     if (!defExpr) defExpr = ''
     else defExpr += ' OR '
-    defExpr += (stateNameField + ' = \'' + feature.attributes[stateNameField] + '\'')
+    defExpr += (stateNameField + ' = \\'' + feature.attributes[stateNameField] + '\\'')
   })
   statesLayer.definitionExpression = '(' + originalStatesLayerDefExpr + ') AND (' + defExpr + ')'
 }
