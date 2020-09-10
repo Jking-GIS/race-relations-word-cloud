@@ -198,7 +198,6 @@ function selectedColorChanged(evt: any) {
 }
 
 function configChanged(evt: any) {
-  console.log(evt)
   if (!evt) {
     setTimeout(() => {
       copyableHtmlText.current!.value = template.replace()
