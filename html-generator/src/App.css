@@ -3,11 +3,12 @@
 }
 
 #copyableHtmlConfigDiv{
-  height: 95vh;
+  height: 100vh;
+  float: left;
 }
 
 #copyableHtmlConfigDiv form{
-  height: 95vh;
+  height: 100%;
   overflow: auto;
 }
 
@@ -15,14 +16,23 @@
   height: 100%;
 }
 
+#copyableHtmlDiv {
+  float: right;
+  height: 100vh;
+}
+
 #copyableHtmlDiv .form-group {
-  height: 95vh;
+  height: 90vh;
 }
 
 #copyableHtmlDiv .form-group div{
-  height: 95%;
+  height: 100%;
 }
 
 #copyableHtmlDiv .form-group div textarea{
   height: 100%;
+}
+
+.App.row {
+  display: inline;
 }
