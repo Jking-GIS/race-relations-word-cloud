@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "0f5e991cecd5fbc7448d73615336bb9f",
+    "revision": "71371b17138b19780d01246699b8d893",
     "url": "/race-relations-word-cloud/index.html"
   },
   {
