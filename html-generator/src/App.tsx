@@ -36,7 +36,7 @@ function App() {
         <Form>
           <ListGroup>
             <ListGroup.Item>
-              <h3>Web Map Configuration</h3>
+              <h3>Item Id Configuration</h3>
 
               <Form.Group as={Row} controlId="webMapId">
                 <Form.Label column sm="4">Web Map Id</Form.Label>
@@ -44,6 +44,16 @@ function App() {
                   <Form.Control 
                     type="text" 
                     placeholder="820b892cf2b54283bcef1c1c9c635524"
+                    onChange={ configChanged }
+                  />
+                </Col>
+              </Form.Group>
+
+              <Form.Group as={Row} controlId="appId">
+                <Form.Label column sm="4">App Id (if web map contains secured services)</Form.Label>
+                <Col sm="8">
+                  <Form.Control 
+                    type="text"
                     onChange={ configChanged }
                   />
                 </Col>

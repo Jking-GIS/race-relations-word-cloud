@@ -657,8 +657,10 @@ export function replace(varToReplace, valueToReplace) {
     if (valueToReplace && valueToReplace !== '""' && valueToReplace !== '') {
       console.log(valueToReplace)
       idMapping[varToReplace] = valueToReplace
-    } else {
+    } else if (originalIdMapping.hasOwnProperty('varToReplace')) {
       idMapping[varToReplace] = originalIdMapping[varToReplace]
+    } else {
+      delete idMapping[varToReplace]
     }
   }
   

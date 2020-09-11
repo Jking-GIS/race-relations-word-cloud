@@ -128,7 +128,6 @@
     var surveyLayerName = "Race Relations Word Cloud Survey - 2"
     var boundaryLayerName = "USA States (Generalized)"
     var webMapId = "820b892cf2b54283bcef1c1c9c635524"
-    var appId = "bdodjq3OAa0V5cMR"
 
     var surveyQuestionField = "Question"
     var surveyDescriptionField = "describe_why_you_chose_this_wor"
@@ -157,19 +156,21 @@
     // -----------------------------------------------------------------
     // TO BE REPLACED FOR CONFIGURATION
 
-    var oAuthInfo = new OAuthInfo({
-      appId: appId
-    });
-    esriId.registerOAuthInfos([oAuthInfo]);
+    if (appId) {
+      var oAuthInfo = new OAuthInfo({
+        appId: appId
+      });
+      esriId.registerOAuthInfos([oAuthInfo]);
 
-    esriId
-    .checkSignInStatus(oAuthInfo.portalUrl + "/sharing")
-    .then(() => {
-      console.log('Logged in!')
-    })
-    .catch(() => {
-      console.log('Need to Log in')
-    });
+      esriId
+      .checkSignInStatus(oAuthInfo.portalUrl + "/sharing")
+      .then(() => {
+        console.log('Logged in!')
+      })
+      .catch(() => {
+        console.log('Need to Log in')
+      });
+    }
 
     var maxHeight = 750;
     var maxWidth = 1000;
