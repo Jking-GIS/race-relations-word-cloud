@@ -1,4 +1,4 @@
-export let template<!DOCTYPE html>
+<!DOCTYPE html>
 <meta charset="utf-8">
 
 <!-- Load d3.js -->
@@ -181,11 +181,11 @@ export let template<!DOCTYPE html>
     var lastQuestionAnswers = [];
     var layout = null;
     var surveyLayer = null;
-    var statesLayer = null;
+    var boundariesLayer = null;
     var defaultPopupTemplate = null;
 
     var currentAnswer = null;
-    var currentStates = [];
+    var currentBoundaries = [];
 
     var wordLocations = {};
     var wordDupes = {};
@@ -200,7 +200,7 @@ export let template<!DOCTYPE html>
     var waitingOnRefresh = false;
 
     var originalSurveyLayerDefExpr = "1=1";
-    var originalStatesLayerDefExpr = "1=1";
+    var originalBoundariesLayerDefExpr = "1=1";
     
     // Create a map from the referenced webmap item id
     let webmap = new WebMap({
@@ -223,9 +223,9 @@ export let template<!DOCTYPE html>
 
     view.when(() => {
       const surveyLayer = getSurveyLayer()
-      const statesLayer = getStatesLayer()
+      const boundariesLayer = getBoundariesLayer()
       originalSurveyLayerDefExpr = surveyLayer.definitionExpression
-      originalStatesLayerDefExpr = statesLayer.definitionExpression
+      originalBoundariesLayerDefExpr = boundariesLayer.definitionExpression
 
       let home = new Home({
         view: view
@@ -246,7 +246,7 @@ export let template<!DOCTYPE html>
       EsriWatchUtils.watch(view.popup, 'selectedFeature', popupFeatureChanged)
       $(window).on('resize', resetWordCloud)
 
-      defaultPopupTemplate = getStatesLayer().popupTemplate
+      defaultPopupTemplate = getBoundariesLayer().popupTemplate
       
       setupSurveyLayerViewEvent()
       filterBadWords()
@@ -407,16 +407,16 @@ function getSurveyLayer() {
   return surveyLayer
 }
 
-function getStatesLayer() {
-  if (!statesLayer) {
+function getBoundariesLayer() {
+  if (!boundariesLayer) {
     view.map.layers.forEach(layer => {
       if (layer.title === boundaryLayerName) {
-        statesLayer = layer;
+        boundariesLayer = layer;
       }
     });
   }
 
-  return statesLayer
+  return boundariesLayer
 }
     
 function extentChanged(evt) {
@@ -470,7 +470,7 @@ function refreshWordCloud(questionAnswers) {
 }
 
 function clickedWord(evt) {
-  currentStates = [];
+  currentBoundaries = [];
 
   closePopup()
 
@@ -483,13 +483,13 @@ function clickedWord(evt) {
   refreshWordCloud(lastQuestionAnswers)
   
   const surveyLayer = getSurveyLayer()
-  const statesLayer = getStatesLayer()
+  const boundariesLayer = getBoundariesLayer()
 
-  statesLayer.definitionExpression = originalStatesLayerDefExpr
+  boundariesLayer.definitionExpression = originalBoundariesLayerDefExpr
 
   if (currentAnswer) {
     const surveyQuery = surveyLayer.createQuery();
-    const statesQuery = statesLayer.createQuery();
+    const boundariesQuery = boundariesLayer.createQuery();
     surveyQuery.where = surveyQuestionField + ' IN (' + wordDupes[currentAnswer].join(',') + ')';
 
     const multiPointResults = new Multipoint()
@@ -498,25 +498,25 @@ function clickedWord(evt) {
         multiPointResults.addPoint(feature.geometry)
       });
 
-      statesQuery.geometry = multiPointResults
-      statesLayer.queryFeatures(statesQuery).then((statesResults) => {
-        currentStates = statesResults.features
-        filterStates()
-        openCurrentStatesPopup()
+      boundariesQuery.geometry = multiPointResults
+      boundariesLayer.queryFeatures(boundariesQuery).then((boundariesResults) => {
+        currentBoundaries = boundariesResults.features
+        filterBoundaries()
+        openCurrentBoundariesPopup()
       });
     });
   }
 }
 
-function filterStates() {
-  const statesLayer = getStatesLayer()
+function filterBoundaries() {
+  const boundariesLayer = getBoundariesLayer()
   let defExpr = null
-  currentStates.forEach((feature) => {
+  currentBoundaries.forEach((feature) => {
     if (!defExpr) defExpr = ''
     else defExpr += ' OR '
     defExpr += (boundaryNameField + ' = \'' + feature.attributes[boundaryNameField] + '\'')
   })
-  statesLayer.definitionExpression = '(' + originalStatesLayerDefExpr + ') AND (' + defExpr + ')'
+  boundariesLayer.definitionExpression = '(' + originalBoundariesLayerDefExpr + ') AND (' + defExpr + ')'
 }
 
 function closePopup() {
@@ -526,9 +526,9 @@ function closePopup() {
   }
 }
 
-function openCurrentStatesPopup() {
+function openCurrentBoundariesPopup() {
   view.popup.open({
-    features: currentStates,
+    features: currentBoundaries,
     updateLocationEnabled: true
   })
 }
@@ -543,8 +543,8 @@ function popupVisibleChanged(visible) {
 }
 
 function popupFeatureChanged(feature) {
-  const statesLayer = getStatesLayer()
-  if (feature && feature.layer && feature.layer === statesLayer) {
+  const boundariesLayer = getBoundariesLayer()
+  if (feature && feature.layer && feature.layer === boundariesLayer) {
     const surveyLayer = getSurveyLayer()
     const surveyQuery = surveyLayer.createQuery();
     surveyQuery.where = surveyQuestionField + ' IN (' + wordDupes[currentAnswer].join(',') + ')';
@@ -555,13 +555,13 @@ function popupFeatureChanged(feature) {
         return feature.attributes[surveyDescriptionField]
       });
 
-      setStatesPopup(questionDescriptions, feature)
+      setBoundariesPopup(questionDescriptions, feature)
     });
   }
 }
 
-function setStatesPopup(questionDescriptions, state) {
-  const statesLayer = getStatesLayer()
+function setBoundariesPopup(questionDescriptions, boundary) {
+  const boundariesLayer = getBoundariesLayer()
   if (currentAnswer) {
     let htmlContent = '<ul class="list-group" id="wordCloudModalBodyList">'
     questionDescriptions.forEach((questionDescription) => {
@@ -569,7 +569,7 @@ function setStatesPopup(questionDescriptions, state) {
     });
     htmlContent += '</ul>'
     const titleModifier = questionDescriptions.length > 0 ? 'feels' : 'does not feel'
-    statesLayer.popupTemplate = {
+    boundariesLayer.popupTemplate = {
       title: '{' + boundaryNameField + '} ' + titleModifier + ' ' + currentAnswer,
       content: [
         {
@@ -580,7 +580,7 @@ function setStatesPopup(questionDescriptions, state) {
       ]
     }
   } else {
-    statesLayer.popupTemplate = defaultPopupTemplate
+    boundariesLayer.popupTemplate = defaultPopupTemplate
   }
 }
 

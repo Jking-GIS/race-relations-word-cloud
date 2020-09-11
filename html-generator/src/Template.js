@@ -14,9 +14,9 @@ export let html = `<!DOCTYPE html>
 <!-- Load arcgis js api -->
 <link
   rel="stylesheet"
-  href="https://js.arcgis.com/4.16/esri/themes/light/main.css"
+  href="https://js.arcgis.com/4.13/esri/themes/light/main.css"
 />
-<script src="https://js.arcgis.com/4.16/"></script>
+<script src="https://js.arcgis.com/4.13/"></script>
 
 <style>
   html,
@@ -119,13 +119,29 @@ export let html = `<!DOCTYPE html>
     "esri/views/MapView",
     "esri/geometry/Multipoint",
     "esri/core/watchUtils",
-    "esri/widgets/Home"
-  ], function (WebMap, MapView, Multipoint, EsriWatchUtils, Home) {
+    "esri/widgets/Home",
+    "esri/identity/OAuthInfo",
+    "esri/identity/IdentityManager"
+  ], function (WebMap, MapView, Multipoint, EsriWatchUtils, Home, OAuthInfo, esriId) {
     // TO BE REPLACED FOR CONFIGURATION
     // -----------------------------------------------------------------
     @@@REPLACEME@@@
     // -----------------------------------------------------------------
     // TO BE REPLACED FOR CONFIGURATION
+
+    var oAuthInfo = new OAuthInfo({
+      appId: appId
+    });
+    esriId.registerOAuthInfos([oAuthInfo]);
+
+    esriId
+    .checkSignInStatus(oAuthInfo.portalUrl + "/sharing")
+    .then(() => {
+      console.log('Logged in!')
+    })
+    .catch(() => {
+      console.log('Need to Log in')
+    });
 
     var maxHeight = 750;
     var maxWidth = 1000;
@@ -137,11 +153,11 @@ export let html = `<!DOCTYPE html>
     var lastQuestionAnswers = [];
     var layout = null;
     var surveyLayer = null;
-    var statesLayer = null;
+    var boundariesLayer = null;
     var defaultPopupTemplate = null;
 
     var currentAnswer = null;
-    var currentStates = [];
+    var currentBoundaries = [];
 
     var wordLocations = {};
     var wordDupes = {};
@@ -156,7 +172,7 @@ export let html = `<!DOCTYPE html>
     var waitingOnRefresh = false;
 
     var originalSurveyLayerDefExpr = "1=1";
-    var originalStatesLayerDefExpr = "1=1";
+    var originalBoundariesLayerDefExpr = "1=1";
     
     // Create a map from the referenced webmap item id
     let webmap = new WebMap({
@@ -179,9 +195,9 @@ export let html = `<!DOCTYPE html>
 
     view.when(() => {
       const surveyLayer = getSurveyLayer()
-      const statesLayer = getStatesLayer()
+      const boundariesLayer = getBoundariesLayer()
       originalSurveyLayerDefExpr = surveyLayer.definitionExpression
-      originalStatesLayerDefExpr = statesLayer.definitionExpression
+      originalBoundariesLayerDefExpr = boundariesLayer.definitionExpression
 
       let home = new Home({
         view: view
@@ -202,7 +218,7 @@ export let html = `<!DOCTYPE html>
       EsriWatchUtils.watch(view.popup, 'selectedFeature', popupFeatureChanged)
       $(window).on('resize', resetWordCloud)
 
-      defaultPopupTemplate = getStatesLayer().popupTemplate
+      defaultPopupTemplate = getBoundariesLayer().popupTemplate
       
       setupSurveyLayerViewEvent()
       filterBadWords()
@@ -363,16 +379,16 @@ function getSurveyLayer() {
   return surveyLayer
 }
 
-function getStatesLayer() {
-  if (!statesLayer) {
+function getBoundariesLayer() {
+  if (!boundariesLayer) {
     view.map.layers.forEach(layer => {
-      if (layer.title === statesLayerName) {
-        statesLayer = layer;
+      if (layer.title === boundaryLayerName) {
+        boundariesLayer = layer;
       }
     });
   }
 
-  return statesLayer
+  return boundariesLayer
 }
     
 function extentChanged(evt) {
@@ -426,7 +442,7 @@ function refreshWordCloud(questionAnswers) {
 }
 
 function clickedWord(evt) {
-  currentStates = [];
+  currentBoundaries = [];
 
   closePopup()
 
@@ -439,13 +455,13 @@ function clickedWord(evt) {
   refreshWordCloud(lastQuestionAnswers)
   
   const surveyLayer = getSurveyLayer()
-  const statesLayer = getStatesLayer()
+  const boundariesLayer = getBoundariesLayer()
 
-  statesLayer.definitionExpression = originalStatesLayerDefExpr
+  boundariesLayer.definitionExpression = originalBoundariesLayerDefExpr
 
   if (currentAnswer) {
     const surveyQuery = surveyLayer.createQuery();
-    const statesQuery = statesLayer.createQuery();
+    const boundariesQuery = boundariesLayer.createQuery();
     surveyQuery.where = surveyQuestionField + ' IN (' + wordDupes[currentAnswer].join(',') + ')';
 
     const multiPointResults = new Multipoint()
@@ -454,25 +470,25 @@ function clickedWord(evt) {
         multiPointResults.addPoint(feature.geometry)
       });
 
-      statesQuery.geometry = multiPointResults
-      statesLayer.queryFeatures(statesQuery).then((statesResults) => {
-        currentStates = statesResults.features
-        filterStates()
-        openCurrentStatesPopup()
+      boundariesQuery.geometry = multiPointResults
+      boundariesLayer.queryFeatures(boundariesQuery).then((boundariesResults) => {
+        currentBoundaries = boundariesResults.features
+        filterBoundaries()
+        openCurrentBoundariesPopup()
       });
     });
   }
 }
 
-function filterStates() {
-  const statesLayer = getStatesLayer()
+function filterBoundaries() {
+  const boundariesLayer = getBoundariesLayer()
   let defExpr = null
-  currentStates.forEach((feature) => {
+  currentBoundaries.forEach((feature) => {
     if (!defExpr) defExpr = ''
     else defExpr += ' OR '
-    defExpr += (stateNameField + ' = \\'' + feature.attributes[stateNameField] + '\\'')
+    defExpr += (boundaryNameField + ' = \\'' + feature.attributes[boundaryNameField] + '\\'')
   })
-  statesLayer.definitionExpression = '(' + originalStatesLayerDefExpr + ') AND (' + defExpr + ')'
+  boundariesLayer.definitionExpression = '(' + originalBoundariesLayerDefExpr + ') AND (' + defExpr + ')'
 }
 
 function closePopup() {
@@ -482,9 +498,9 @@ function closePopup() {
   }
 }
 
-function openCurrentStatesPopup() {
+function openCurrentBoundariesPopup() {
   view.popup.open({
-    features: currentStates,
+    features: currentBoundaries,
     updateLocationEnabled: true
   })
 }
@@ -499,8 +515,8 @@ function popupVisibleChanged(visible) {
 }
 
 function popupFeatureChanged(feature) {
-  const statesLayer = getStatesLayer()
-  if (feature && feature.layer && feature.layer === statesLayer) {
+  const boundariesLayer = getBoundariesLayer()
+  if (feature && feature.layer && feature.layer === boundariesLayer) {
     const surveyLayer = getSurveyLayer()
     const surveyQuery = surveyLayer.createQuery();
     surveyQuery.where = surveyQuestionField + ' IN (' + wordDupes[currentAnswer].join(',') + ')';
@@ -511,13 +527,13 @@ function popupFeatureChanged(feature) {
         return feature.attributes[surveyDescriptionField]
       });
 
-      setStatesPopup(questionDescriptions, feature)
+      setBoundariesPopup(questionDescriptions, feature)
     });
   }
 }
 
-function setStatesPopup(questionDescriptions, state) {
-  const statesLayer = getStatesLayer()
+function setBoundariesPopup(questionDescriptions, boundary) {
+  const boundariesLayer = getBoundariesLayer()
   if (currentAnswer) {
     let htmlContent = '<ul class="list-group" id="wordCloudModalBodyList">'
     questionDescriptions.forEach((questionDescription) => {
@@ -525,18 +541,18 @@ function setStatesPopup(questionDescriptions, state) {
     });
     htmlContent += '</ul>'
     const titleModifier = questionDescriptions.length > 0 ? 'feels' : 'does not feel'
-    statesLayer.popupTemplate = {
-      title: '{' + stateNameField + '} ' + titleModifier + ' ' + currentAnswer,
+    boundariesLayer.popupTemplate = {
+      title: '{' + boundaryNameField + '} ' + titleModifier + ' ' + currentAnswer,
       content: [
         {
           type: "text",
           text: htmlContent
         },
-        ...extraStatePopupContent
+        ...extraBoundaryPopupContent
       ]
     }
   } else {
-    statesLayer.popupTemplate = defaultPopupTemplate
+    boundariesLayer.popupTemplate = defaultPopupTemplate
   }
 }
 
@@ -566,7 +582,7 @@ function draw(words) {
         .style("fill", function (d) { if (d.text === currentAnswer) { return wordCloudSelectedColor } else { return wordCloudColor }})
         .style("cursor", "pointer")
         .attr("text-anchor", "middle")
-        .style("font-family", fontFamily)
+        .style("font-family", wordCloudFontFamily)
         .attr("transform", function(d) {
           if (!wordLocations.hasOwnProperty(d.text)) {
             wordLocations[d.text] = [d.x, d.y]
