@@ -129,19 +129,21 @@ export let html = `<!DOCTYPE html>
     // -----------------------------------------------------------------
     // TO BE REPLACED FOR CONFIGURATION
 
-    var oAuthInfo = new OAuthInfo({
-      appId: appId
-    });
-    esriId.registerOAuthInfos([oAuthInfo]);
+    if (appId) {
+      var oAuthInfo = new OAuthInfo({
+        appId: appId
+      });
+      esriId.registerOAuthInfos([oAuthInfo]);
 
-    esriId
-    .checkSignInStatus(oAuthInfo.portalUrl + "/sharing")
-    .then(() => {
-      console.log('Logged in!')
-    })
-    .catch(() => {
-      console.log('Need to Log in')
-    });
+      esriId
+      .checkSignInStatus(oAuthInfo.portalUrl + "/sharing")
+      .then(() => {
+        console.log('Logged in!')
+      })
+      .catch(() => {
+        console.log('Need to Log in')
+      });
+    }
 
     var maxHeight = 750;
     var maxWidth = 1000;
