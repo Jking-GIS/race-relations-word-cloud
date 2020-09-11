@@ -128,6 +128,7 @@ export let template<!DOCTYPE html>
     var surveyLayerName = "Race Relations Word Cloud Survey - 2"
     var boundaryLayerName = "USA States (Generalized)"
     var webMapId = "820b892cf2b54283bcef1c1c9c635524"
+    var appId = "bdodjq3OAa0V5cMR"
 
     var surveyQuestionField = "Question"
     var surveyDescriptionField = "describe_why_you_chose_this_wor"
@@ -157,10 +158,9 @@ export let template<!DOCTYPE html>
     // TO BE REPLACED FOR CONFIGURATION
 
     var oAuthInfo = new OAuthInfo({
-      appId: "bdodjq3OAa0V5cMR"
+      appId: appId
     });
     esriId.registerOAuthInfos([oAuthInfo]);
-
 
     esriId
     .checkSignInStatus(oAuthInfo.portalUrl + "/sharing")
