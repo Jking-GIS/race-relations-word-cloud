@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "be2924434ae658e3427288f57b808d13",
+    "revision": "0d5549984c23ee504582698fb5508ac6",
     "url": "/race-relations-word-cloud/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/race-relations-word-cloud/static/css/2.d9ad5f5c.chunk.css"
   },
   {
-    "revision": "07c08096592ccb3dba5f",
+    "revision": "29bac7cfc987a8bf5a84",
     "url": "/race-relations-word-cloud/static/css/main.c2fed928.chunk.css"
   },
   {
@@ -20,8 +20,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/race-relations-word-cloud/static/js/2.f9a49c65.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "07c08096592ccb3dba5f",
-    "url": "/race-relations-word-cloud/static/js/main.f9267161.chunk.js"
+    "revision": "29bac7cfc987a8bf5a84",
+    "url": "/race-relations-word-cloud/static/js/main.6424008b.chunk.js"
   },
   {
     "revision": "f747869f13e0a4be00d0",

@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/race-relations-word-cloud/static/css/main.c2fed928.chunk.css",
-    "main.js": "/race-relations-word-cloud/static/js/main.f9267161.chunk.js",
-    "main.js.map": "/race-relations-word-cloud/static/js/main.f9267161.chunk.js.map",
+    "main.js": "/race-relations-word-cloud/static/js/main.6424008b.chunk.js",
+    "main.js.map": "/race-relations-word-cloud/static/js/main.6424008b.chunk.js.map",
     "runtime-main.js": "/race-relations-word-cloud/static/js/runtime-main.fe37264b.js",
     "runtime-main.js.map": "/race-relations-word-cloud/static/js/runtime-main.fe37264b.js.map",
     "static/css/2.d9ad5f5c.chunk.css": "/race-relations-word-cloud/static/css/2.d9ad5f5c.chunk.css",
     "static/js/2.f9a49c65.chunk.js": "/race-relations-word-cloud/static/js/2.f9a49c65.chunk.js",
     "static/js/2.f9a49c65.chunk.js.map": "/race-relations-word-cloud/static/js/2.f9a49c65.chunk.js.map",
     "index.html": "/race-relations-word-cloud/index.html",
-    "precache-manifest.c7be390f06285a50f4301b63f0c25258.js": "/race-relations-word-cloud/precache-manifest.c7be390f06285a50f4301b63f0c25258.js",
+    "precache-manifest.a28d4e908baa329c01a62a159aa81cbb.js": "/race-relations-word-cloud/precache-manifest.a28d4e908baa329c01a62a159aa81cbb.js",
     "service-worker.js": "/race-relations-word-cloud/service-worker.js",
     "static/css/2.d9ad5f5c.chunk.css.map": "/race-relations-word-cloud/static/css/2.d9ad5f5c.chunk.css.map",
     "static/css/main.c2fed928.chunk.css.map": "/race-relations-word-cloud/static/css/main.c2fed928.chunk.css.map",
@@ -20,6 +20,6 @@
     "static/css/2.d9ad5f5c.chunk.css",
     "static/js/2.f9a49c65.chunk.js",
     "static/css/main.c2fed928.chunk.css",
-    "static/js/main.f9267161.chunk.js"
+    "static/js/main.6424008b.chunk.js"
   ]
 }
