@@ -626,6 +626,7 @@ function fetchDummyWords() {
 
 var idMapping = {
   'webMapId': '"820b892cf2b54283bcef1c1c9c635524"',
+  'appId': 'null',
   'surveyLayerName': '"Race Relations Word Cloud Survey - 2"',
   'surveyQuestionField': '"Question"',
   'surveyDescriptionField': '"describe_why_you_chose_this_wor"',
@@ -661,8 +662,6 @@ export function replace(varToReplace, valueToReplace) {
       idMapping[varToReplace] = valueToReplace
     } else if (originalIdMapping.hasOwnProperty('varToReplace')) {
       idMapping[varToReplace] = originalIdMapping[varToReplace]
-    } else {
-      delete idMapping[varToReplace]
     }
   }
   
