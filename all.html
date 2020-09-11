@@ -14,9 +14,9 @@ export let template<!DOCTYPE html>
 <!-- Load arcgis js api -->
 <link
   rel="stylesheet"
-  href="https://js.arcgis.com/4.16/esri/themes/light/main.css"
+  href="https://js.arcgis.com/4.13/esri/themes/light/main.css"
 />
-<script src="https://js.arcgis.com/4.16/"></script>
+<script src="https://js.arcgis.com/4.13/"></script>
 
 <style>
   html,
@@ -119,8 +119,10 @@ export let template<!DOCTYPE html>
     "esri/views/MapView",
     "esri/geometry/Multipoint",
     "esri/core/watchUtils",
-    "esri/widgets/Home"
-  ], function (WebMap, MapView, Multipoint, EsriWatchUtils, Home) {
+    "esri/widgets/Home",
+    "esri/identity/OAuthInfo",
+    "esri/identity/IdentityManager"
+  ], function (WebMap, MapView, Multipoint, EsriWatchUtils, Home, OAuthInfo, esriId) {
     // TO BE REPLACED FOR CONFIGURATION
     // -----------------------------------------------------------------
     var surveyLayerName = "Race Relations Word Cloud Survey - 2"
@@ -153,6 +155,21 @@ export let template<!DOCTYPE html>
     var wordCloudFontFamily = "Futura"
     // -----------------------------------------------------------------
     // TO BE REPLACED FOR CONFIGURATION
+
+    var oAuthInfo = new OAuthInfo({
+      appId: "bdodjq3OAa0V5cMR"
+    });
+    esriId.registerOAuthInfos([oAuthInfo]);
+
+
+    esriId
+    .checkSignInStatus(oAuthInfo.portalUrl + "/sharing")
+    .then(() => {
+      console.log('Logged in!')
+    })
+    .catch(() => {
+      console.log('Need to Log in')
+    });
 
     var maxHeight = 750;
     var maxWidth = 1000;
