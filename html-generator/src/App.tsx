@@ -193,7 +193,7 @@ function colorChanged(evt: any) {
   configChanged({
     'target': {
       'id': 'wordCloudColor',
-      'value': `"${evt.hex}"`
+      'value': evt.hex
     }
   })
 }
@@ -202,7 +202,7 @@ function selectedColorChanged(evt: any) {
   configChanged({
     'target': {
       'id': 'wordCloudSelectedColor',
-      'value': `"${evt.hex}"`
+      'value': evt.hex
     }
   })
 }
