@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/race-relations-word-cloud/precache-manifest.f43e4dfa92487f058f09ce5906748910.js"
+  "/race-relations-word-cloud/precache-manifest.3c55934063318b8463ad3ecbc5e8068a.js"
 );
 
 self.addEventListener('message', (event) => {
